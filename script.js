@@ -172,7 +172,7 @@
   function setNav(h){
     document.documentElement.dataset.route = h;
     $$('#nav a').forEach(a => { if (a.getAttribute('href') === '#'+h) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
-    document.title = (h === 'home' ? 'Intazar Akash — Model | Dhaka, Bangladesh' : h.charAt(0).toUpperCase()+h.slice(1) + ' — Intazar Akash');
+    document.title = 'Intazar Akash';
   }
   // Scroll changed which part of the flow is on screen: update nav and hash without jumping
   function setRoute(h){
