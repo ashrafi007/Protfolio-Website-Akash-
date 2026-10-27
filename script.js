@@ -8,9 +8,9 @@
   // Hero video: autoplays muted, paused for reduced motion or by the viewer
   const heroVid = $('#heroVid'), heroToggle = $('#heroToggle');
   let heroPaused = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  function setHeroLabel(){ const t = heroVid.paused ? 'Play' : 'Pause'; heroToggle.textContent = t; heroToggle.setAttribute('aria-label', t + ' hero video'); }
+  function setHeroLabel(){ if (!heroToggle) return; const t = heroVid.paused ? 'Play' : 'Pause'; heroToggle.textContent = t; heroToggle.setAttribute('aria-label', t + ' hero video'); }
   function playHero(){ if (heroPaused) { heroVid.pause(); setHeroLabel(); return; } heroVid.play().then(setHeroLabel).catch(setHeroLabel); }
-  heroToggle.addEventListener('click', () => { heroPaused = !heroVid.paused; if (heroPaused) heroVid.pause(); else heroVid.play().catch(()=>{}); setHeroLabel(); });
+  if (heroToggle) heroToggle.addEventListener('click', () => { heroPaused = !heroVid.paused; if (heroPaused) heroVid.pause(); else heroVid.play().catch(()=>{}); setHeroLabel(); });
 
   let heroTw = null;
   const loaderEl = $('#loader');
@@ -268,8 +268,6 @@
 
   // Motion intro film plays only while it is on screen
   const motionBg = $('#motionBg');
-  const fxTc = $('#fxTc');
-  if (motionBg && fxTc) motionBg.addEventListener('timeupdate', () => { const t = motionBg.currentTime, p = n => String(Math.floor(n)).padStart(2, '0'); fxTc.textContent = p(t / 3600) + ':' + p(t / 60 % 60) + ':' + p(t % 60); });
   if (motionBg && window.gsap && window.ScrollTrigger && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     gsap.fromTo(motionBg, { scale: 1.18 }, { scale: 1, ease: 'none', scrollTrigger: { trigger: '.motion-intro', start: 'top bottom', end: 'bottom top', scrub: true } });
   }
