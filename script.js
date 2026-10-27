@@ -12,6 +12,9 @@
   function playHero(){ if (heroPaused) { heroVid.pause(); setHeroLabel(); return; } heroVid.play().then(setHeroLabel).catch(setHeroLabel); }
   heroToggle.addEventListener('click', () => { heroPaused = !heroVid.paused; if (heroPaused) heroVid.pause(); else heroVid.play().catch(()=>{}); setHeroLabel(); });
 
+  let heroTw = null;
+  const loaderEl = $('#loader');
+  if (loaderEl) document.documentElement.classList.add('loading');
   // Hero name: GSAP letter rise, then weight swells (Bodoni Moda 400-600) near the pointer
   (function(){
     const name = $('.hero .name');
@@ -22,7 +25,7 @@
       const txt = i.textContent; i.textContent = '';
       Array.from(txt).forEach(c => { const s = document.createElement('span'); s.className = 'ch'; s.setAttribute('aria-hidden','true'); s.textContent = c; i.append(s); letters.push(s); });
     });
-    gsap.from(letters, { yPercent: 115, rotate: 6, duration: 0.7, ease: "power4.out", stagger: 0.025, delay: 0.05 });
+    heroTw = gsap.from(letters, { yPercent: 115, rotate: 6, duration: 0.7, ease: "power4.out", stagger: 0.025, delay: 0.05, paused: !!loaderEl });
     const hero = name.closest('.hero'), setters = letters.map(l => gsap.quickTo(l, 'fontWeight', { duration: 0.5, ease: 'power2.out' }));
     hero.addEventListener('pointermove', e => {
       letters.forEach((l, k) => {
@@ -31,6 +34,36 @@
       });
     });
     hero.addEventListener('pointerleave', () => setters.forEach(s => s(400)));
+  })();
+
+  // Loading screen: waits for fonts, the hero video's first frames and the page load (never longer than 5s)
+  (function(){
+    const root = document.documentElement;
+    const done = () => { root.classList.remove('loading'); if (loaderEl) loaderEl.remove(); if (heroTw) heroTw.play(); };
+    if (!loaderEl) return;
+    if (!window.gsap || window.matchMedia('(prefers-reduced-motion: reduce)').matches) { done(); return; }
+    const nameEl = $('.ld-name', loaderEl), letters = [];
+    $$('span', nameEl).forEach(sp => { const t = sp.textContent; sp.textContent = ''; Array.from(t).forEach(c => { const e = document.createElement('span'); e.className = 'ch'; e.textContent = c; sp.append(e); letters.push(e); }); });
+    const bar = $('#ldBar'), num = $('#ldN'), st = { p: 0 }, t0 = performance.now();
+    const paint = () => { gsap.set(bar, { scaleX: st.p / 100 }); num.textContent = String(Math.round(st.p)).padStart(3, '0'); };
+    gsap.from(letters, { yPercent: 115, rotate: 6, duration: 0.8, ease: 'power4.out', stagger: 0.035 });
+    const creep = gsap.to(st, { p: 88, duration: 3.2, ease: 'power2.out', onUpdate: paint });
+    const wait = new Promise(r => { const f = () => r(); if (document.readyState === 'complete') f(); else window.addEventListener('load', f, { once: true }); });
+    const fonts = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+    const vid = new Promise(r => { if (heroVid.readyState >= 3) r(); else { heroVid.addEventListener('canplay', () => r(), { once: true }); heroVid.addEventListener('error', () => r(), { once: true }); } });
+    Promise.race([Promise.all([wait, fonts, vid]), new Promise(r => setTimeout(r, 5000))]).then(() => {
+      const left = Math.max(0, 1500 - (performance.now() - t0));
+      setTimeout(() => {
+        creep.kill();
+        gsap.to(st, { p: 100, duration: 0.45, ease: 'power2.out', onUpdate: paint, onComplete: () => {
+          gsap.timeline({ onComplete: done })
+            .to(letters, { yPercent: -115, rotate: -4, duration: 0.55, ease: 'power3.in', stagger: 0.025 })
+            .to('.ld-row, .ld-bar', { yPercent: 0, opacity: 0, duration: 0.3 }, '<0.1')
+            .to(loaderEl, { yPercent: -100, duration: 0.9, ease: 'power4.inOut' }, '-=0.1')
+            .add(() => { if (heroTw) heroTw.play(); }, '-=0.45');
+        } });
+      }, left * 1000 / 1000);
+    });
   })();
 
   // Router

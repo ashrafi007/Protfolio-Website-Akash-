@@ -360,3 +360,18 @@ h2.rv .ch{display:inline-block}
   .wa{font-size:13px;padding:8px 14px;bottom:14px;right:14px;opacity:.92}
   .hs .shot img,.hs .row-two .shot img{object-fit:contain;object-position:50% 50%;background:var(--raise)}
 }
+
+
+/* Loading screen: same ink and Bodoni as the hero; the name rises, a hairline fills, then the curtain lifts */
+html.js.loading{overflow:hidden}
+.loader{display:none}
+html.js .loader{display:flex;position:fixed;inset:0;z-index:200;align-items:center;justify-content:center;background:#0C0C0B;color:#F2F0EC;will-change:transform}
+.ld-in{width:min(640px,calc(100vw - 2 * var(--gut)))}
+.ld-name{margin:0 0 clamp(20px,4vh,36px);font-family:var(--serif);font-weight:400;font-size:clamp(40px,11vw,120px);white-space:nowrap;line-height:.88;letter-spacing:-.01em;text-transform:uppercase;font-variation-settings:"opsz" 96}
+.ld-name span{display:block;overflow:hidden;padding-bottom:.05em}
+.ld-name .ch{display:inline-block;will-change:transform}
+.ld-row{display:flex;justify-content:space-between;align-items:baseline;font:500 11px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:rgba(242,240,236,.7);margin-bottom:12px}
+.ld-n{font-variant-numeric:tabular-nums}
+.ld-bar{height:1px;background:rgba(242,240,236,.22);overflow:hidden}
+.ld-bar i{display:block;height:100%;background:#F2F0EC;transform:scaleX(0);transform-origin:left}
+@media (prefers-reduced-motion:reduce){html.js .loader{display:none}}
